@@ -3,138 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eco-History: 100 Point Challenge</title>
+    <title>Eco-History: Achievement Challenge</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        #game-container { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 850px; width: 100%; text-align: center; }
+        :root { --green: #27ae60; --yellow: #f1c40f; --red: #e74c3c; --blue: #3498db; --bg: #f0f2f5; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; justify-content: center; }
+        #game-container { background: white; padding: 2rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 650px; text-align: center; }
         
-        .timeline-slot { height: 12px; background: #e9ecef; margin: 8px 0; border-radius: 5px; border: 2px dashed #ced4da; transition: 0.2s; }
-        .timeline-slot.drag-over { background: #d1e7dd; border-color: #198754; height: 50px; }
+        .passage-card { background: white; border: 1px solid #ced4da; padding: 15px; border-radius: 8px; text-align: left; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: relative; line-height: 1.5; font-size: 1rem; }
+        .confirmed { margin-bottom: 12px; cursor: pointer; transition: 0.2s; }
+        .confirmed.abbreviated { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-height: 48px; }
+        
+        .timeline-slot { height: 20px; background: #e9ecef; margin: 10px 0; border-radius: 8px; border: 2px dashed #ced4da; }
+        .timeline-slot.drag-over { background: #d1e7dd; border-color: var(--green); height: 60px; }
 
-        .passage-card { background: white; border: 1px solid #ced4da; padding: 15px; border-radius: 8px; text-align: left; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; line-height: 1.5; }
-        #drag-me { background: #fff3cd; border: 2px solid #ffc107; cursor: grab; font-style: italic; }
+        #drag-me { background: #fff3cd; border: 2px solid #ffc107; cursor: grab; font-style: italic; margin-bottom: 15px; }
+        .source-tag { font-weight: bold; font-size: 0.75rem; color: #555; text-transform: uppercase; margin-right: 5px; }
         
-        #hint-box { margin-top: 10px; font-weight: bold; color: #856404; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 5px; padding: 12px; font-size: 0.95rem; }
+        .state-correct { border-left: 6px solid var(--green); background: #f8fff9; }
+        .state-clue { border-left: 6px solid var(--yellow); background: #fffdf0; }
+        .state-wrong { border-left: 6px solid var(--red); background: #fff5f5; }
+        .state-anchor { border-left: 6px solid var(--blue); background: #f0f7ff; }
 
-        .confirmed { margin-bottom: 15px; animation: slideIn 0.4s ease; }
-        
-        /* State Colors */
-        .state-correct { border-left: 6px solid #27ae60; background: #f8fff9; }
-        .state-clue { border-left: 6px solid #f1c40f; background: #fffdf0; }
-        .state-wrong { border-left: 6px solid #e74c3c; background: #fff5f5; animation: shake 0.5s; }
-        
-        .source-tag { display: block; font-weight: bold; font-size: 0.85rem; color: #2c3e50; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
-        #new-challenge-container { background: #f8f9fa; border: 1px solid #dee2e6; padding: 20px; border-radius: 12px; margin-bottom: 30px; }
-        
         .hidden { display: none !important; }
-        .btn { padding: 10px 25px; border: none; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-start { background: #3498db; color: white; font-size: 1.1rem; }
-        .btn-hint { background: #e67e22; color: white; margin-top: 10px; }
-        .btn-next { background: #27ae60; color: white; margin-top: 20px; font-size: 1rem; }
-        .btn-review { background: #6c757d; color: white; font-size: 0.8rem; margin-top: 10px; padding: 5px 15px; }
-        
-        .review-info { background: #f1f3f5; padding: 15px; margin-top: 10px; border-radius: 8px; font-size: 0.9rem; color: #495057; border: 1px solid #dee2e6; }
-        #score-display { font-size: 1.4rem; font-weight: bold; color: #2c3e50; margin-bottom: 20px; background: #eef2f7; padding: 10px; border-radius: 10px; }
-        #explanation-area { padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left; font-size: 0.95rem; border: 1px solid #ced4da; }
+        .btn { padding: 12px 24px; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; transition: 0.2s; }
+        .btn-start { background: var(--blue); color: white; }
+        .btn-hint { background: #e67e22; color: white; margin-top: 10px; display: block; }
+        .btn-next { background: var(--green); color: white; margin-top: 15px; }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+        #score-display { font-size: 1.2rem; font-weight: bold; padding: 10px; background: #eef2f7; border-radius: 8px; margin-bottom: 15px; border: 1px solid #d0d7de; }
+        #explanation-area { padding: 15px; border-radius: 8px; margin-top: 10px; text-align: left; font-size: 0.95rem; border: 1px solid #ddd; }
+        
+        .achievement-box { background: #f8f9fa; border: 2px solid #dee2e6; border-radius: 12px; padding: 20px; margin-bottom: 25px; text-align: left; }
+        .stat-line { margin: 8px 0; font-size: 0.95rem; display: flex; justify-content: space-between; }
+        .rank-title { font-size: 1.5rem; font-weight: 800; color: var(--blue); margin-bottom: 10px; text-transform: uppercase; }
+        
+        .significance-text { margin-top: 10px; font-size: 0.88rem; color: #444; border-top: 1px solid #eee; padding-top: 8px; font-style: normal; }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <h1>Eco-History: 100 Point Challenge</h1>
-    <div id="score-display" class="hidden">Total Score: <span id="correct-count">0</span> / 100</div>
+    <h1 style="margin:0 0 10px 0;">Eco-History Challenge</h1>
+    <div id="score-display" class="hidden">Score: <span id="correct-count">0</span> / 100</div>
 
     <div id="start-screen">
-        <p>Organize 6 environmental passages across 5 stages of placement. <br>Goal: Achieve a perfect <strong>100/100</strong>.</p>
-        <p style="font-size: 0.9rem; color: #666;">No Clue = <strong>20 pts</strong> | Clue used = <strong>10 pts</strong> | Incorrect = <strong>0 pts</strong></p>
-        <button class="btn btn-start" onclick="startGame()">Start Game</button>
+        <p>Correct order (No Clue) = 20 pts | With Clue = 10 pts</p>
+        <button class="btn btn-start" onclick="startGame()">Begin Game</button>
     </div>
 
     <div id="game-ui" class="hidden">
+        <div id="instruction-text" style="font-weight:600; margin-bottom:15px; color:#2c3e50;"></div>
         <div id="new-challenge-container">
-            <h3 id="stage-instruction" style="margin-top:0"></h3>
             <div id="drag-me" class="passage-card" draggable="true">
                 <span id="challenge-text"></span>
             </div>
-            
+            <div id="hint-area">
+                <button id="hint-btn" class="btn btn-hint" onclick="revealHint()">Get a Clue (-10 pts)</button>
+                <div id="hint-box" class="hidden" style="background:#fff3cd; padding:12px; border-radius:8px; margin-top:5px; font-size:0.9rem; color:#856404; font-weight:bold; text-align:left;"></div>
+            </div>
             <div id="post-guess-feedback" class="hidden">
                 <div id="explanation-area"></div>
                 <button class="btn btn-next" onclick="proceedToNext()">Continue to Next Stage</button>
             </div>
-
-            <div id="hint-area">
-                <button id="hint-btn" class="btn btn-hint" onclick="revealHint()">Ask for a Clue (-10 pts potential)</button>
-                <div id="hint-box" class="hidden"></div>
-            </div>
         </div>
+        <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
         <div id="timeline-area"></div>
     </div>
 
     <div id="final-screen" class="hidden">
-        <h2>Challenge Result</h2>
-        <p style="font-size: 2.2rem; margin-bottom: 5px;"><span id="final-score"></span> / 100</p>
-        <div id="review-area" style="text-align: left; margin-bottom: 30px;">
-            <h3>Chronological Review:</h3>
-            <div id="final-timeline-list"></div>
-        </div>
+        <div id="achievement-report"></div>
+        <p>Would you like to try another sequence of discoveries?</p>
         <button class="btn btn-start" onclick="location.reload()">Play Again</button>
     </div>
 </div>
 
 <script>
     const allPassages = [
-        { year: -2100, source: "Epic of Gilgamesh", text: "The heroes took their axes and penetrated into the depths of the Cedar Forest, where the mountain was green and the shade was cool. When they cut down the sacred cedar, the guardian Humbaba was slain, and the god Enlil was filled with fury at the senseless destruction of his trees. The epic records that the heavens roared and the earth echoed back a reply as the mountain was stripped bare to provide timber for the city's glory.", hint: "A hero's journey from the earliest cradle of human civilization.", reason: "This is a Bronze Age text from Mesopotamia. It represents the earliest recorded literary tension between urban expansion and sacred wilderness.", summary: "Records the conflict between Sumerian city-states and the sacred forests of the Near East." },
-        { year: -300, source: "Mencius (China)", text: "The trees of the Ox Mountain were once beautiful, but because they were on the outskirts of a great state, they were hewn down with axes and bills until only the bare earth remained. Seeing it so denuded, people now imagine the mountain was never finely wooded, just as they assume a heartless man never possessed natural virtue. If it receives its proper nourishment, there is nothing which will not grow, but if it loses that nourishment, decay is inevitable.", hint: "A scholar using the state of a mountain to explain the innate goodness of the human heart.", reason: "Writing in the Warring States period, the Confucian scholar Mencius used ecological loss to illustrate his theory of innate human virtue.", summary: "Argues that ethical and ecological decay both stem from a failure to 'nourish' the life force (Qi)." },
-        { year: 950, source: "Brethren of Purity (Iraq)", text: "The animals gathered before the King of the Jinn to bring a legal case against the human race for their cruelty, arguing that humans had seized their lands and claimed they were masters over all living creatures. While the animals were once wandering in peace, humans disrupted the sacred balance of the world which had been set in perfect harmony by the Creator. The epistles warn that this arrogance toward the natural world will eventually lead to a shared ruin for both man and beast.", hint: "A legal dispute where non-human voices seek justice in an Islamic philosophical framework.", reason: "This 10th-century medieval Arabic text offers a sophisticated critique of anthropocentrism centuries before modern animal rights.", summary: "Critiques human claims of dominance and argues for the inherent rights of non-human species in God's creation." },
-        { year: 1669, source: "Jean-Baptiste Colbert (France)", text: "France will surely perish for lack of wood if we do not intervene immediately to stop the senseless destruction and waste of our kingdom's forests. This Great Ordinance is enacted to ensure that our timber is preserved as a strategic resource for the building of the royal navy and the survival of the state. We must treat our woodlands as a national treasure that requires the constant, vigilant care of the sovereign to prevent total collapse.", hint: "An administrator linking forest preservation directly to the naval power of a European monarchy.", reason: "In the 17th century, Colbert pioneered state forestry to ensure timber for King Louis XIV's navy, a key mercantilist move.", summary: "A foundational moment in state-managed forestry, linking environmental resources to national security." },
-        { year: 1712, source: "Kaibara Ekken (Japan)", text: "Plants and trees, as well as the birds and beasts, are all the children of nature just as humans are, sharing the same vital life-force of the universe. A ruler who destroys the forests to satisfy his own luxury is like a foolish man who cuts off his own limbs to feed his belly. Because all things are part of one great harmony, treating nature with cruelty is a violation of the filial piety we owe to the earth that sustains us.", hint: "A botanist viewing the environment through the lens of duty and kinship in an isolationist East Asian state.", reason: "Ekken represents the Edo period's transition toward sustainable land management guided by Neo-Confucian ethics.", summary: "Uses the concept of 'Qi' to argue that environmental care is a moral and social duty." },
-        { year: 1798, source: "Thomas Malthus (UK)", text: "The power of population is so superior to the power of the earth to produce subsistence for man that premature death must, in some shape or other, visit the human race. The vices of mankind are active and able ministers of depopulation, serving as the precursors in the great army of destruction. Should they fail in this war of extermination, sickly seasons, epidemics, and plague will advance in terrific array to sweep off their thousands.", hint: "A warning that biological reproduction will inevitably outpace the earth's ability to provide food.", reason: "At the end of the 18th century, Malthus established the 'Malthusian Trap,' the first formal theory of resource limits.", summary: "Introduced the concept of 'carrying capacity'—the limit to how many people a landscape can support." },
-        { year: 1808, source: "Charles Fourier (France)", text: "Civilization brings the axe and destruction to the natural world, and the result is the denuding of mountain-sides and a permanent deterioration of the climate. We boast of our agricultural progress while falling far below the so-called savages who at least leave the land in its primitive, uncultivated state. At the end of half a century, we will be astonished to discover that our current jargon of perfectibility was actually a form of total environmental ruin.", hint: "A social theorist critiquing the 'progress' of early European industrialization.", reason: "Fourier was among the first social theorists to suggest that large-scale deforestation was altering regional climates.", summary: "Early 19th-century critique of industrial civilization's role in local and regional climate shifts." },
-        { year: 1830, source: "Alexander von Humboldt", text: "When forests are destroyed by European planters with such imprudent precipitance, the natural springs are dried up and the rivers become mere torrents during the rains. The atmosphere loses its obstacle to the sun's heat, causing the ground to bake and the local climate to shift in ways that threaten the stability of the entire region. We must view nature as a single living whole where every organism and element is linked through an intricate web of life.", hint: "A traveler who observed that nature is a global 'web' where all parts are interconnected.", reason: "Humboldt's early 19th-century work laid the scientific foundation for ecology, viewing nature as an interconnected 'whole'.", summary: "Developed the 'web of life' concept and provided early evidence of human-caused climate change in the tropics." },
-        { year: 1864, source: "George Perkins Marsh (USA)", text: "Man is everywhere a disturbing agent, and wherever he plants his foot, the harmonies of nature are turned into discords that threaten the stability of existing arrangements. Indigenous species are extirpated and supplanted by foreign growths, while the very face of the earth is laid bare to the elements. Without the protection of the forest, the soil is alternately parched by the summer sun and seared by the rigors of winter, leading to the ultimate decay of the land.", hint: "A diplomat warning that human footprint disrupts the 'harmonies of nature' beyond repair.", reason: "Marsh's 'Man and Nature' (1864) was the first major work to document how human activity permanently alters the earth.", summary: "Analyzed long-term environmental damage and was a major catalyst for the US conservation movement." },
-        { year: 1869, source: "Ottoman Forest Regulation", text: "The forests are henceforth declared the common property of the State, and no person shall be permitted to clear forest land for private agriculture without express permission. This regulation is essential because the protection of the mountains prevents the silting of our rivers and the drying of our fertile plains. We must centralize the management of these resources to ensure the continued lifeblood of our people and the ecological stability of the imperial landscape.", hint: "An imperial state code asserting control over mountainous terrain to protect water systems.", reason: "Following European models, the 1869 Ottoman code represents the global spread of centralized, state-run environmental management.", summary: "Centralized forest management to protect watershed stability and agriculture during the Tanzimat era." },
-        { year: 1881, source: "Charles Dana Wilber (USA)", text: "To the optimists of our times, it will always be a source of pleasure to understand that the Creator never imposed a perpetual desert upon the earth. By the industry and skill of man, even the most unpromising arid lands can be transformed by the plow into fertile and productive fields. It is a grand concert of forces where human energy compels the heavens to yield their treasures of dew and rain upon the chosen land.", hint: "A land promoter who believed that human labor and technology can physically alter the weather.", reason: "In the late 19th century, land promoters used the myth 'Rain Follows the Plow' to encourage settlement in the American West.", summary: "Reflects the late 19th-century hubris that humans could physically engineer climate through farming." },
-        { year: 1912, source: "John Muir (USA)", text: "Dam Hetch Hetchy! One might as well dam the people's cathedrals and churches for water-tanks, for no holier temple has ever been consecrated by the heart of man. These temple-destroyers, devotees of a ravaging commercialism, seem to have a perfect contempt for Nature and seek only to satisfy their own selfish interests. The valley is not a mere commodity to be sold, but a spiritual resource that must be preserved for all generations.", hint: "A passionate plea to treat wilderness as a spiritual temple rather than a source of plumbing.", reason: "The 1912 fight over the Hetch Hetchy dam was the first major political battle between 'preservation' and 'conservation'.", summary: "Muir values nature for its spiritual worth, contrasting it with industrial-era commercial utility." },
-        { year: 1938, source: "Guy Stewart Callendar (UK)", text: "The combustion of fossil fuel, whether it be peat from the surface or oil from deep below, is likely to prove beneficial to mankind by delaying the return of deadly glaciers. These small increases in mean temperature will be important for northern cultivation, as the growth of favorably situated plants is directly proportional to carbon dioxide pressure. While the reserves of fuel are vast, the return of carbon to the air is a grand experiment that may improve the world's climate for centuries.", hint: "An engineer who viewed carbon emissions as a helpful shield against an ice age.", reason: "Before the mid-20th century, many scientists (like Callendar) believed global warming would be a beneficial byproduct of industry.", summary: "Provided early evidence linking CO2 to global warming, initially believing it would benefit agriculture." },
-        { year: 1962, source: "Rachel Carson (USA)", text: "For the first time in the history of the world, every human being is now subjected to contact with dangerous chemicals from the moment of conception until death. These synthetic pesticides have been distributed through the universal systems of air and water, lingering in the soil and even the bodies of fish and birds. We have allowed these 'elixirs of death' to be used without understanding the long-term consequences for the integrity of the natural world and our own health.", hint: "A biologist exposing the invisible danger that began to permeate the entire food chain.", reason: "Carson's 'Silent Spring' (1962) transformed environmentalism from a focus on land to a focus on toxic pollutants and health.", summary: "Ignited the modern environmental movement by targeting the chemical industry's impact on public health." },
-        { year: 1975, source: "Masanobu Fukuoka (Japan)", text: "The ultimate goal of farming is not the growing of crops, but the cultivation and perfection of human beings through a return to natural processes. Humanity, with its specialized sciences, has only succeeded in creating a world of confusion by trying to 'improve' what was already perfect. By practicing 'do-nothing' farming, we stop our interference and allow the earth to restore its own health and vitality without the need for machines or chemicals.", hint: "A rejection of modern agricultural science in favor of 'do-nothing' techniques.", reason: "Following the postwar industrial boom, Fukuoka’s 1975 manifesto advocated for a radical return to traditional ecological wisdom.", summary: "A critique of the Green Revolution and industrial farming, focusing on minimal-intervention agriculture." },
-        { year: 1988, source: "James Hansen (USA)", text: "The expected global warming is now of the same magnitude as the observed warming, and there is only a one percent chance that this is a mere accidental fluctuation. Our data suggest a cooling in the stratosphere while the ground is warming, a clear signature of the greenhouse effect that is beginning to emerge. We can state with ninety-nine percent confidence that the greenhouse effect has been detected, and it is changing our climate now.", hint: "A scientist using statistical confidence to warn that the greenhouse effect is no longer a future threat.", reason: "Hansen's 1988 Senate testimony is the moment global warming became a dominant worldwide political issue.", summary: "Provided the first definitive scientific warning to world leaders that global warming was already occurring." },
-        { year: 1989, source: "Vandana Shiva (India)", text: "The colonial divide separated forest from farm and removed indigenous people from their lands in the name of a fragmented, linear science. This Western patriarchal reason imposes a logic of monoculture against the cyclic flows of ecology that have sustained life for millennia. We must reclaim the partnership between women and nature to ensure the sustainability of sustenance against the arrogance of industrial destruction.", hint: "A critique of 'linear' Western science in favor of indigenous and feminine ecological wisdom.", reason: "In the late 80s, Shiva led the Global South's intellectual push against industrial 'patenting' of nature and resources.", summary: "Links ecological sustainability to social justice, ecofeminism, and anti-colonial thought." },
-        { year: 2004, source: "Wangari Maathai (Kenya)", text: "We are called to assist the Earth to heal her wounds and, in the process, we will heal our own wounds as we recognize that sustainable development and peace are indivisible. Planting trees is a simple act, but it creates a movement for democracy and allows the soil to hold the water that brings life back to the community. Today we face a challenge that calls for a shift in our thinking so that humanity stops threatening its own life-support system.", hint: "A Nobel-winning argument that environmental restoration is a prerequisite for democracy.", reason: "Maathai's Nobel-winning work in the early 21st century linked environmental healing with political democracy and peace.", summary: "Used tree planting as a tool for grassroots political empowerment and environmental restoration in Kenya." }
+        { year: -2100, source: "Gilgamesh", text: "The heroes took their axes and penetrated into the depths of the Cedar Forest, where the mountain was green and the shade was cool. When they cut down the sacred cedar, the guardian Humbaba was slain, and the god Enlil was filled with fury at the destruction of his trees. The epic records that the heavens roared and the earth echoed back a reply as the mountain was stripped bare.", hint: "A time when the first city-states emerged from the Bronze Age.", reason: "The Epic records the earliest literary tension between city-building and wilderness.", significance: "This represents the dawn of anthropocentrism. It captures the moment humanity began to view the natural world not just as a home, but as a resource to be harvested for urban glory, prompting divine (ecological) anxiety." },
+        { year: -300, source: "Mencius", text: "The trees of the Ox Mountain were once beautiful, but because they were on the outskirts of a great state, they were hewn down with axes and bills until only the bare earth remained. Seeing it so denuded, people now imagine the mountain was never finely wooded, assuming a heartless man never possessed virtue. If it receives proper nourishment, there is nothing which will not grow; if it loses it, decay is inevitable.", hint: "When scholars in East Asia first debated how the environment reflects human virtue.", reason: "Mencius (4th c. BCE) used this ecology-to-ethics metaphor to argue for the innate goodness of human nature.", significance: "Mencius establishes the 'Moral Ecology' framework. He argues that the degradation of the environment is a direct mirror of the degradation of the human soul; to nourish one is to nourish the other." },
+        { year: 950, source: "Brethren of Purity", text: "The animals gathered to bring a legal case against the human race for their cruelty, arguing that humans had seized their lands and claimed they were masters. Humans disrupted the sacred balance of the world set in harmony by the Creator. Arrogance toward the natural world will lead to a shared ruin for both man and beast.", hint: "A period of scientific debate in the medieval Islamic world.", reason: "The 'Case of the Animals' is a medieval Islamic critique of human claims to absolute dominion over nature.", significance: "This text provides a medieval Arabic foundation for animal rights and ecological balance (Mizan). It challenges the idea that humans have an absolute right to exploit nature, insisting that humans are but one part of a divine harmony." },
+        { year: 1669, source: "Colbert", text: "France will surely perish for lack of wood if we do not intervene to stop the destruction of our kingdom's forests. This Great Ordinance is enacted to ensure timber is preserved for the royal navy and the survival of the state. We must treat woodlands as a national treasure requiring the constant care of the sovereign.", hint: "The era of mercantilism, when monarchs built fleets for global trade.", reason: "Colbert's 1669 Ordinance founded state forestry to secure timber for warships.", significance: "This marks the birth of State-Managed Forestry. It shifts environmental concern from a moral issue to a matter of national security and economic survival, laying the groundwork for modern resource management." },
+        { year: 1712, source: "Ekken", text: "Plants, birds, and beasts are all children of nature just as humans are, sharing the same vital life-force of the universe. A ruler who destroys forests for luxury is like a foolish man who cuts off his own limbs to feed his belly. Treating nature with cruelty is a violation of the filial piety we owe to the earth that sustains us.", hint: "When thinkers blended social duties with botany during regional isolation.", reason: "Ekken applied the concept of 'Qi' to environmental duty during the Japanese Edo period.", significance: "Ekken integrates Neo-Confucian social ethics with biological study. He frames the environment as an extension of the family unit, making ecological care a requirement of 'filial piety' rather than just a practical choice." },
+        { year: 1798, source: "Malthus", text: "The power of population is so superior to the power of the earth to produce subsistence for man that premature death must visit the human race. Vices of mankind are active ministers of depopulation, serving as precursors in the army of destruction. Sickly seasons, epidemics, and plague advance to sweep off their thousands.", hint: "When rapid urban growth first sparked fears of global famine.", reason: "Malthus established the 'Malthusian Trap' at the dawn of the Industrial Revolution.", significance: "Malthus introduced the concept of 'Carrying Capacity.' He was the first to mathematically model the hard limits of the Earth's resources, starting a debate on overpopulation that continues to this day." },
+        { year: 1808, source: "Fourier", text: "Civilization brings the axe and destruction to the natural world, resulting in the denuding of mountain-sides and a permanent deterioration of the climate. We boast of our progress while falling far below the savages who at least leave the land in its primitive state. In fifty years, we will discover that our current jargon of perfectibility was actually environmental ruin.", hint: "When social theorists first argued that clearing forests was changing weather patterns.", reason: "Fourier was among the first to argue that deforestation caused regional climate shifts.", significance: "Fourier offers an early critique of industrial 'progress.' He is one of the first to explicitly link human industrial activity (logging) to regional climate change, warning that technical advancement might lead to ecological collapse." },
+        { year: 1830, source: "Humboldt", text: "When forests are destroyed with such imprudent precipitance, the natural springs are dried up and the rivers become mere torrents during the rains. The atmosphere loses its obstacle to the sun's heat, causing the ground to bake and the local climate to shift. We must view nature as a single living whole where every organism and element is linked.", hint: "A global explorer who mapped the 'web of life' across the tropics.", reason: "Humboldt's early 19th-century travels laid the scientific foundation for ecology.", significance: "Humboldt founded modern Ecology. By viewing nature as a 'Web of Life,' he proved that damaging one part of an ecosystem (the trees) has cascading effects on the water cycle, soil, and global atmosphere." },
+        { year: 1864, source: "Marsh", text: "Man is everywhere a disturbing agent; wherever he plants his foot, the harmonies of nature are turned into discords. Indigenous species are extirpated and supplanted by foreign growths, while the face of the earth is laid bare to the elements. Without the forest, the soil is parched by summer sun and seared by the rigors of winter.", hint: "When diplomats first systematically documented the scars of rapid modern expansion.", reason: "Marsh's 'Man and Nature' documented how human activity permanently alters the Earth.", significance: "Marsh's 'Man and Nature' is the first systematic proof of human impact on a planetary scale. He moved environmentalism from observation to warning, showing that humans could unintentionally cause the collapse of civilizations by ruining their soil and water." },
+        { year: 1869, source: "Ottoman Code", text: "The forests are henceforth declared common property of the State; no person shall clear forest land for private agriculture without permission. The protection of mountains prevents the silting of our rivers and the drying of our plains. We must centralize management to ensure the ecological stability of the imperial landscape.", hint: "A period of reform where empires modernized laws to protect watersheds.", reason: "This 1869 code represents the spread of centralized, state-run environmental management.", significance: "The 1869 regulation shows that conservation was a global phenomenon. It illustrates how empires outside the West adopted scientific management to protect the 'hydraulic stability' of their lands to prevent agricultural ruin." },
+        { year: 1881, source: "Wilber", text: "The Creator never imposed a perpetual desert upon the earth. By the industry and skill of man, even the most unpromising arid lands can be transformed by the plow into fertile fields. It is a grand concert of forces where human energy compels the heavens to yield their treasures of dew and rain.", hint: "When frontier settlers believed plowing land created rain.", reason: "Land promoters used the myth 'Rain Follows the Plow' to encourage Western settlement.", significance: "Wilber represents 'Ecological Hubris.' His work illustrates the 19th-century belief that human technology could physically engineer the climate for profit, a dangerous myth that led to the Dust Bowl era." },
+        { year: 1912, source: "Muir", text: "Dam Hetch Hetchy! One might as well dam the people's cathedrals and churches for water-tanks, for no holier temple has ever been consecrated. These temple-destroyers, devotees of a ravaging commercialism, have a perfect contempt for Nature. The valley is not a commodity, but a spiritual resource.", hint: "When the battle between 'spiritual nature' and 'urban progress' began.", reason: "Muir defined preservationism, valuing nature for its intrinsic spiritual worth.", significance: "Muir defined the 'Preservationist' movement. He shifted the environmental argument from 'resource management' to 'spiritual necessity,' arguing that wilderness is vital for the human soul, not just the human economy." },
+        { year: 1938, source: "Callendar", text: "The combustion of fossil fuel is likely to prove beneficial to mankind by delaying the return of deadly glaciers. These small increases in mean temperature will be important for northern cultivation, as the growth of plants is proportional to carbon dioxide pressure. Returning carbon to the air is a grand experiment.", hint: "The first scientific link between coal smoke and a warmer planet.", reason: "In 1938, Callendar provided the first data linking CO2 to warming.", significance: "Callendar discovered the 'Callendar Effect'—the first quantitative proof that fossil fuel burning was raising global temperatures. Ironically, he initially believed this warming would be a positive 'grand experiment' to improve agriculture." },
+        { year: 1962, source: "Carson", text: "For the first time in history, every human being is now subjected to contact with dangerous chemicals from conception until death. These synthetic pesticides linger in the soil and even the bodies of fish and birds. We have allowed these 'elixirs of death' to be used without understanding the long-term consequences.", hint: "When the threat of synthetic industrial chemicals first reached the public.", reason: "Carson transformed environmentalism into a movement focused on toxic pollutants.", significance: "Carson's 'Silent Spring' shifted the focus from 'saving trees' to 'toxicology.' She proved that industrial chemicals were poisoning the entire food chain, including humans, launching the modern environmental movement." },
+        { year: 1975, source: "Fukuoka", text: "The ultimate goal of farming is not the growing of crops, but the cultivation and perfection of human beings. Humanity, with its specialized sciences, has only created a world of confusion by trying to 'improve' what was already perfect. By practicing 'do-nothing' farming, we allow the earth to restore its own health.", hint: "A move back to traditional soil wisdom after the postwar industrial boom.", reason: "Fukuoka advocated for a return to minimal-intervention agriculture in 1975.", significance: "Fukuoka offered a radical critique of the 'Green Revolution.' He argued for 'Do-Nothing Farming,' a return to biological processes that restores the Earth rather than exhausting it with chemical fertilizers." },
+        { year: 1988, source: "Hansen", text: "The expected global warming is now of the same magnitude as the observed warming. Our data suggest a cooling in the stratosphere while the ground is warming, a clear signature of the greenhouse effect. We can state with ninety-nine percent confidence that the greenhouse effect has been detected.", hint: "When computing confirmed the global greenhouse signal was already here.", reason: "Hansen's testimony made Climate Change a dominant political priority in 1988.", significance: "Hansen's 1988 Senate testimony marks the moment Global Warming became a political reality. He provided the statistical confidence needed to move climate change from a scientific theory to a global policy crisis." },
+        { year: 1989, source: "Shiva", text: "The colonial divide separated forest from farm and removed indigenous people from their lands in the name of fragmented science. This Western patriarchal reason imposes a logic of monoculture against the cyclic flows of ecology. We must reclaim the partnership between women and nature to ensure sustenance.", hint: "A voice from the Global South challenging industrial ownership of life.", reason: "In the late 80s, Shiva led the push against industrial 'patenting' of nature.", significance: "Vandana Shiva introduces 'Ecofeminism' and anti-colonial ecology. She argues that industrial agriculture treats life as private property (patents), destroying the biodiversity and local wisdom that sustain global life." },
+        { year: 2004, source: "Maathai", text: "We are called to assist the Earth to heal her wounds and, in the process, we will heal our own wounds as we recognize that sustainable development and peace are indivisible. Planting trees is a simple act, but it creates a movement for democracy and allows the soil to hold the water.", hint: "When environmental restoration was linked directly to democratic peace.", reason: "Maathai's Green Belt Movement linked environmental healing with political democracy.", significance: "Maathai linked Ecology with Democracy. Her Green Belt Movement showed that restoring the environment (planting trees) is a direct tool for empowering poor communities and ensuring long-term political peace." }
     ];
 
-    let gameDeck = [];
-    let placedTimeline = [];
-    let currentStep = 0;
-    let currentScore = 0;
-    let hintUsedForCurrent = false;
-
-    const dragMe = document.getElementById('drag-me');
-    dragMe.addEventListener('dragstart', (e) => {
-        if(document.getElementById('post-guess-feedback').classList.contains('hidden')) {
-            e.dataTransfer.setData("text", "pass");
-        } else {
-            e.preventDefault();
-        }
-    });
+    let gameDeck = [], placedTimeline = [], currentStep = 0, score = 0, cluesUsedCount = 0, currentHintUsed = false, correctCount = 0;
 
     function startGame() {
         gameDeck = allPassages.sort(() => 0.5 - Math.random()).slice(0, 6);
         placedTimeline = [Object.assign({}, gameDeck[0], {status: 'anchor'})];
-        currentStep = 1;
-        currentScore = 0; 
-
+        currentStep = 1; score = 0; correctCount = 0; cluesUsedCount = 0;
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('score-display').classList.remove('hidden');
         document.getElementById('game-ui').classList.remove('hidden');
-        
-        const anchor = placedTimeline[0];
-        const dateStr = anchor.year < 0 ? Math.abs(anchor.year) + " BCE" : anchor.year;
-        document.getElementById('stage-instruction').innerHTML = `Anchor: <strong>${anchor.source} (${dateStr})</strong>. <br>Place the next text <strong>before</strong> or <strong>after</strong> it.`;
-        
         renderTimeline();
         showNextChallenge();
     }
@@ -143,23 +116,23 @@
         const area = document.getElementById('timeline-area');
         area.innerHTML = "";
         createSlot(area, 0);
-
         placedTimeline.forEach((p, index) => {
             const card = document.createElement('div');
-            card.className = "passage-card confirmed " + getStatusClass(p.status);
+            const isInitialAnchor = (p.status === 'anchor' && currentStep === 1);
+            card.className = "passage-card confirmed " + getStatusClass(p.status) + (isInitialAnchor ? "" : " abbreviated");
             const dateStr = p.year < 0 ? Math.abs(p.year) + " BCE" : p.year;
-            card.innerHTML = `<span class="source-tag">${dateStr} — ${p.source}</span> ${p.text}`;
+            card.innerHTML = `<span class="source-tag">${dateStr} — ${p.source}:</span> ${p.text}`;
+            card.onclick = () => card.classList.toggle('abbreviated');
             area.appendChild(card);
             createSlot(area, index + 1);
         });
-        
-        document.getElementById('correct-count').innerText = currentScore.toFixed(0);
+        document.getElementById('correct-count').innerText = score;
     }
 
-    function getStatusClass(status) {
-        if (status === 'correct') return 'state-correct';
-        if (status === 'clue') return 'state-clue';
-        if (status === 'wrong') return 'state-wrong';
+    function getStatusClass(s) {
+        if (s === 'correct') return 'state-correct';
+        if (s === 'clue') return 'state-clue';
+        if (s === 'wrong') return 'state-wrong';
         return 'state-anchor';
     }
 
@@ -173,20 +146,19 @@
     }
 
     function showNextChallenge() {
-        hintUsedForCurrent = false;
+        currentHintUsed = false;
         document.getElementById('challenge-text').innerText = gameDeck[currentStep].text;
         document.getElementById('hint-btn').classList.remove('hidden');
         document.getElementById('hint-box').classList.add('hidden');
+        document.getElementById('hint-area').classList.remove('hidden');
         document.getElementById('post-guess-feedback').classList.add('hidden');
         document.getElementById('drag-me').classList.remove('hidden');
-        
-        if (currentStep > 1) {
-            document.getElementById('stage-instruction').innerText = "Where does this new discovery fit in your growing timeline?";
-        }
+        document.getElementById('instruction-text').innerHTML = currentStep === 1 ? "Drag the new discovery below into the slot <strong>before</strong> or <strong>after</strong> the anchor." : "Place this discovery into the correct chronological slot.";
     }
 
     function revealHint() {
-        hintUsedForCurrent = true;
+        currentHintUsed = true;
+        cluesUsedCount++;
         const box = document.getElementById('hint-box');
         box.innerText = "CLUE: " + gameDeck[currentStep].hint;
         box.classList.remove('hidden');
@@ -196,74 +168,50 @@
     function handleDrop(userPos) {
         const nextData = gameDeck[currentStep];
         let correctPos = 0;
-        while(correctPos < placedTimeline.length && nextData.year > placedTimeline[correctPos].year) {
-            correctPos++;
-        }
-
+        while(correctPos < placedTimeline.length && nextData.year > placedTimeline[correctPos].year) correctPos++;
         const isCorrect = (userPos === correctPos);
-        const feedback = document.getElementById('post-guess-feedback');
-        const exp = document.getElementById('explanation-area');
-
-        let status = 'wrong';
-        if (isCorrect) {
-            status = hintUsedForCurrent ? 'clue' : 'correct';
-            currentScore += hintUsedForCurrent ? 10 : 20;
-            exp.style.backgroundColor = hintUsedForCurrent ? "#fffdf0" : "#f8fff9";
-            exp.innerHTML = `<strong>✓ Correct!</strong><br>${nextData.reason}`;
-        } else {
-            exp.style.backgroundColor = "#fff5f5";
-            exp.innerHTML = `<strong>✘ Incorrect.</strong><br>${nextData.reason}<br>Timeline re-ordered.`;
-        }
-
-        const nextEntry = Object.assign({}, nextData, {status: status});
-        placedTimeline.splice(correctPos, 0, nextEntry);
-        
+        if (isCorrect) { score += currentHintUsed ? 10 : 20; correctCount++; }
+        const status = isCorrect ? (currentHintUsed ? 'clue' : 'correct') : 'wrong';
+        const feedback = document.getElementById('explanation-area');
+        feedback.innerHTML = `<strong>${isCorrect ? "✓ Correct!" : "✘ Incorrect."}</strong><br>${nextData.reason}`;
+        feedback.className = getStatusClass(status);
+        placedTimeline.splice(correctPos, 0, Object.assign({}, nextData, {status: status}));
         renderTimeline();
-        
         document.getElementById('drag-me').classList.add('hidden');
         document.getElementById('hint-area').classList.add('hidden');
-        feedback.classList.remove('hidden');
+        document.getElementById('post-guess-feedback').classList.remove('hidden');
     }
 
     function proceedToNext() {
         currentStep++;
-        if (currentStep < 6) {
-            document.getElementById('hint-area').classList.remove('hidden');
-            showNextChallenge();
-        } else {
-            showFinalScore();
-        }
+        if (currentStep < 6) showNextChallenge();
+        else summarizeAchievements();
     }
 
-    function showFinalScore() {
+    function summarizeAchievements() {
         document.getElementById('game-ui').classList.add('hidden');
         document.getElementById('final-screen').classList.remove('hidden');
-        document.getElementById('final-score').innerText = currentScore.toFixed(0);
-        
-        const reviewList = document.getElementById('final-timeline-list');
-        reviewList.innerHTML = "";
-        
-        placedTimeline.forEach((p, idx) => {
-            const dateStr = p.year < 0 ? Math.abs(p.year) + " BCE" : p.year;
-            const entry = document.createElement('div');
-            entry.className = "passage-card confirmed " + getStatusClass(p.status);
-            entry.innerHTML = `
-                <span class="source-tag">${dateStr} — ${p.source}</span> 
-                ${p.text}
-                <br>
-                <button class="btn btn-review" onclick="toggleReview(${idx})">Review Historical Context</button>
-                <div id="review-${idx}" class="review-info hidden">
-                    <strong>Analysis:</strong> ${p.summary}
-                </div>
-            `;
-            reviewList.appendChild(entry);
+        let rank = score === 100 ? "Grand Archivist" : score >= 80 ? "Syllabus Master" : score >= 60 ? "Research Associate" : "Frontier Scout";
+        const report = document.getElementById('achievement-report');
+        report.innerHTML = `
+            <div class="achievement-box">
+                <div class="rank-title">${rank}</div>
+                <div class="stat-line"><span>Final Score:</span> <strong>${score} / 100</strong></div>
+                <div class="stat-line"><span>Strategic Profile:</span> <strong>${cluesUsedCount === 0 ? "Historical Intuition" : "Methodical Analyst"}</strong></div>
+                <hr style="margin: 15px 0;">
+                <p style="font-weight:bold; font-size:0.9rem;">Review of Environmental Significance:</p>
+                <div id="final-review-list"></div>
+            </div>`;
+        const list = document.getElementById('final-review-list');
+        placedTimeline.forEach(p => {
+            const div = document.createElement('div');
+            div.className = "passage-card confirmed " + getStatusClass(p.status);
+            div.innerHTML = `<span class="source-tag">${p.year < 0 ? Math.abs(p.year) + " BCE" : p.year} — ${p.source}:</span> ${p.text}<div class="significance-text"><strong>Environmental Significance:</strong> ${p.significance}</div>`;
+            list.appendChild(div);
         });
     }
 
-    function toggleReview(id) {
-        const el = document.getElementById(`review-${id}`);
-        el.classList.toggle('hidden');
-    }
+    document.getElementById('drag-me').addEventListener('dragstart', (e) => e.dataTransfer.setData("text", "pass"));
 </script>
 
 </body>
