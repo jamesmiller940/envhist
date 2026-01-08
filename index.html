@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Eco-Chronology</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #e8ecef; color: #2c3e50; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        #game-container { background: white; padding: 2.5rem; border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); max-width: 700px; width: 95%; text-align: center; border-top: 8px solid #27ae60; }
+        .passage-box { background: #f8f9fa; padding: 1.5rem; border: 1px solid #dee2e6; border-radius: 8px; margin: 1.5rem 0; min-height: 180px; display: flex; flex-direction: column; justify-content: center; text-align: left; position: relative; }
+        .quote-mark { position: absolute; top: 10px; left: 10px; font-size: 3rem; color: #d1d8e0; font-family: serif; line-height: 1; }
+        .passage-text { font-style: italic; font-size: 1.05rem; line-height: 1.5; padding: 0 15px; z-index: 1; }
+        .btn-group { display: flex; justify-content: center; gap: 20px; margin-top: 20px; }
+        button { padding: 18px 35px; font-size: 1.1rem; cursor: pointer; border: none; border-radius: 50px; transition: all 0.3s; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-earlier { background: #3498db; color: white; }
+        .btn-later { background: #27ae60; color: white; }
+        button:hover { transform: scale(1.05); filter: brightness(1.1); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        #score { font-size: 1.4rem; font-weight: bold; color: #7f8c8d; margin-bottom: 5px; }
+        #feedback { margin-top: 1.5rem; font-weight: bold; min-height: 1.5rem; }
+        .hidden { display: none; }
+        .source-reveal { font-size: 0.95rem; color: #e67e22; margin-top: 10px; border-top: 1px dashed #ccc; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <h1>Global Eco-Chronology</h1>
+    <p>Is the <strong>next</strong> hidden passage <strong>Earlier</strong> or <strong>Later</strong> than this one?</p>
+    <div id="score">Current Score: 0</div>
+    
+    <div id="passage-display" class="passage-box">
+        <span class="quote-mark">“</span>
+        <div id="text-content" class="passage-text">Loading the timeline...</div>
+    </div>
+
+    <div class="btn-group" id="controls">
+        <button class="btn-earlier" onclick="guess('earlier')">Earlier</button>
+        <button class="btn-later" onclick="guess('later')">Later</button>
+    </div>
+
+    <div id="feedback"></div>
+    <div id="final-screen" class="hidden">
+        <h2>End of the Timeline!</h2>
+        <p id="final-score"></p>
+        <button onclick="location.reload()" style="background: #2c3e50; color: white;">Restart Challenge</button>
+    </div>
+</div>
+
+<script>
+    const allPassages = [
+        { year: -2100, source: "Epic of Gilgamesh (Mesopotamia)", text: "The heavens roared, the earth echoed a reply... they cut down the Cedar Forest. Enlil heard their noise and was angered: 'Who has come and interfered with my trees?'" },
+        { year: -300, source: "Mencius (China)", text: "The trees of the Ox Mountain were once beautiful... When people saw the mountain all bare, they thought it had never been finely wooded. But is this the nature of the mountain?" },
+        { year: 950, source: "Brethren of Purity (Iraq)", text: "We were wandering in our own land, eating and drinking in peace... then these humans came. They seized our lands... They claim they are our masters and we are their slaves." },
+        { year: 1669, source: "Jean-Baptiste Colbert (France)", text: "France will perish for lack of wood... It is a great pity to see how the forests of this kingdom are being destroyed. We must take care of them for the sake of the state." },
+        { year: 1712, source: "Kaibara Ekken (Japan)", text: "A ruler who destroys the forests for his own luxury is like a man who cuts his own limbs to feed his belly. Humans and nature share the same life-force." },
+        { year: 1798, source: "Thomas Malthus (UK)", text: "The power of population is so superior to the power of the earth to produce subsistence for man, that premature death must in some shape or other visit the human race." },
+        { year: 1808, source: "Charles Fourier (France) [Passage 2]", text: "We bring the axe and destruction, and the result is landslides, the denuding of mountain-sides, and deterioration of the climate." },
+        { year: 1830, source: "Alexander von Humboldt (Germany/S. America)", text: "When forests are destroyed... the springs are entirely dried up. The agitations of the atmosphere and the heat of the sun have no longer any obstacle." },
+        { year: 1864, source: "George Perkins Marsh (USA) [Passage 4]", text: "Man is everywhere a disturbing agent. Wherever he plants his foot, the harmonies of nature are turned to discords." },
+        { year: 1869, source: "Ottoman Forest Regulation (Turkey)", text: "No person shall be permitted to clear forest land for agriculture... The protection of the mountains is essential to prevent the silting of the rivers." },
+        { year: 1881, source: "Charles Dana Wilber (USA) [Passage 5]", text: "Man, by the plow, can transform it into farm areas... the polished rain-drop that never fails to fall in answer to the imploring power of labor." },
+        { year: 1912, source: "John Muir (USA/Scotland)", text: "Dam Hetch Hetchy! As well dam for water-tanks the people's cathedrals and churches, for no holier temple has ever been consecrated by the heart of man." },
+        { year: 1938, source: "Guy Stewart Callendar (UK) [Passage 1]", text: "The combustion of fossil fuel... is likely to prove beneficial... the return of deadly glaciers should be delayed indefinitely." },
+        { year: 1962, source: "Rachel Carson (USA)", text: "For the first time in the history of the world, every human being is now subjected to contact with dangerous chemicals, from the moment of conception until death." },
+        { year: 1975, source: "Masanobu Fukuoka (Japan)", text: "The ultimate goal of farming is not the growing of crops, but the cultivation and perfection of human beings. By doing 'nothing'—allowing the earth to farm itself." },
+        { year: 1988, source: "James Hansen (USA) [Passage 3]", text: "The expected global warming is of the same magnitude as the observed warming. Since there is only a 1 percent chance of an accidental warming..." },
+        { year: 1989, source: "Vandana Shiva (India)", text: "Western science imposes a linear logic against the cyclic flows of ecology. The colonial divide separated forest from farm." },
+        { year: 2004, source: "Wangari Maathai (Kenya)", text: "We are called to assist the Earth to heal her wounds and in the process heal our own... sustainable development, democracy and peace are indivisible." }
+    ];
+
+    let deck = [...allPassages].sort(() => Math.random() - 0.5);
+    let currentPassage = deck.pop();
+    let score = 0;
+
+    function displayPassage() {
+        document.getElementById('text-content').innerText = currentPassage.text;
+    }
+
+    function guess(direction) {
+        if (deck.length === 0) return;
+
+        let nextPassage = deck.pop();
+        let isLater = nextPassage.year > currentPassage.year;
+        let correct = (direction === 'later' && isLater) || (direction === 'earlier' && !isLater);
+
+        const feedback = document.getElementById('feedback');
+        if (correct) {
+            score++;
+            feedback.innerHTML = `<span style="color: #27ae60;">✓ Correct! That was ${nextPassage.source}.</span>`;
+            document.getElementById('score').innerText = `Score: ${score}`;
+            currentPassage = nextPassage;
+            displayPassage();
+            if(deck.length === 0) endGame(true);
+        } else {
+            endGame(false, nextPassage);
+        }
+    }
+
+    function endGame(win, failPassage) {
+        document.getElementById('controls').classList.add('hidden');
+        if (!win) {
+            document.getElementById('passage-display').innerHTML = `
+                <div style="padding:15px;">
+                    <p style="color: #e74c3c; font-weight: bold;">Wrong Era!</p>
+                    <p>Current: <strong>${currentPassage.source}</strong> (${currentPassage.year})</p>
+                    <p>Next was: <strong>${failPassage.source}</strong> (${failPassage.year})</p>
+                </div>`;
+        }
+        document.getElementById('final-screen').classList.remove('hidden');
+        document.getElementById('final-score').innerText = win ? `Amazing! You finished the whole timeline!` : `You correctly placed ${score} passages.`;
+    }
+
+    displayPassage();
+</script>
+
+</body>
+</html>
